@@ -120,6 +120,14 @@ class Database:
         sql = "SELECT * FROM Ufcwar ORDER BY id"
         return await self.execute(sql, fetch=True)
     
+    async def select_all_wars_admin(self, lim):
+        sql = f"SELECT * FROM Ufcwar  ORDER BY id OFFSET {lim} FETCH FIRST 8 ROW ONLY"
+        return await self.execute(sql, fetch=True)
+    
+    async def select_all_wars_v(self, lim):
+        sql = f"SELECT * FROM Ufcwar WHERE winner IS NULL ORDER BY id OFFSET {lim} FETCH FIRST 5 ROW ONLY"
+        return await self.execute(sql, fetch=True)
+    
     async def select_war(self, id):
         sql = f"SELECT * FROM Ufcwar WHERE id = {id}"
         return await self.execute(sql, fetchrow=True)
@@ -159,7 +167,7 @@ class Database:
         return await self.execute(sql, *parameters, fetchrow=True)
     
     async def select_raiting(self):
-        sql = f"SELECT * FROM Users ORDER BY score DESC LIMIT 20"
+        sql = f"SELECT  user_id, SUM(score), MIN(id) FROM voice GROUP BY user_id ORDER BY sum, min limit 20"
         return await self.execute(sql, fetch=True)
     
 #  select * from users order by score desc limit 5
@@ -202,17 +210,24 @@ class Database:
         await self.execute(f"DELETE FROM Voice WHERE user_id =$1 AND war_id=$2",u_id, war_id, execute=True)
     
     
-    # async def delete_wars(self):
-    #     await self.execute("DELETE FROM Voice WHERE TRUE", execute=True)
-    #     await self.execute("DELETE FROM Ufcwar WHERE TRUE", execute=True)
+    async def delete_wars(self):
+        await self.execute("DELETE FROM Voice WHERE TRUE", execute=True)
+        await self.execute("DELETE FROM Ufcwar WHERE TRUE", execute=True)
 
     async def delete_war(self, id ):
         await self.execute(f"DELETE FROM Ufcwar WHERE id =$1",id, execute=True)
     
-    
+
+    async def drop_wars(self):
+        await self.execute("DROP TABLE Ufcwar", execute=True)
+
     async def delete_channel(self, id ):
         await self.execute(f"DELETE FROM Channels WHERE channel_id =$1",id, execute=True)
         # print("okkkkk ochirildi------------", id)
+    async def delete_channels(self):
+        await self.execute(f"DELETE FROM Channels WHERE TRUE", execute=True)
+        # print("okkkkk ochirildi------------", id)
+    
 
     async def drop_users(self):
         await self.execute("DROP TABLE Users", execute=True)

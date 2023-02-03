@@ -7,7 +7,7 @@ admin_main = ReplyKeyboardMarkup(
     keyboard=[
  
         [
-            KeyboardButton(text="🤼‍♂️ UFC Janglar"), 
+            KeyboardButton(text="📺 UFC Turnirlar"), 
         ],
          [
             KeyboardButton(text="➕ Jang qo'shish"), 
@@ -17,7 +17,7 @@ admin_main = ReplyKeyboardMarkup(
             KeyboardButton(text="🔔/🔕 Ovoz berishni yoqish/o'chirish"), 
         ],
                 [
-            KeyboardButton(text="⚔️ Jang hisobi"), 
+            KeyboardButton(text="📝 Jang hisobi"), 
             KeyboardButton(text="📊 Reyting"), 
         ],
                    [
@@ -34,7 +34,7 @@ admin_main_2= ReplyKeyboardMarkup(
     keyboard=[
  
          [
-            KeyboardButton(text="⛓ Kanallar ro'yxati"), 
+            KeyboardButton(text="📣 Kanallar ro'yxati"), 
         ],
          [
             KeyboardButton(text="➕ Kanal qo'shish"), 
@@ -98,11 +98,11 @@ user_main = ReplyKeyboardMarkup(
  
 
          [
-            KeyboardButton(text="🤼‍♂️ UFC Janglar"), 
+            KeyboardButton(text="📺 UFC Turnirlar"), 
         ],
                   [
             KeyboardButton(text="🏁 Ovoz berish"), 
-            KeyboardButton(text="🔱 Yig'ilgan ball"), 
+            KeyboardButton(text="🎯 Yig'ilgan ball"), 
         ],
                 [
             KeyboardButton(text="🤖 Bot haqida"), 

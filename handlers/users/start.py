@@ -1,4 +1,4 @@
-import asyncpg
+﻿import asyncpg
 from aiogram import types
 from aiogram.dispatcher.filters.builtin import CommandStart
 from keyboards.default.default_btn import user_main
@@ -9,9 +9,11 @@ from aiogram.types import ReplyKeyboardRemove
 
 from keyboards.inline.subscription import check_button, start_keyboard
 
-@dp.message_handler(commands=['start'])
+@dp.message_handler(state="*",commands=['start'])
 async def show_channels(message: types.Message):
     CHANNELS = await db.select_all_channels()
+    # print(CHANNELS)
+    # await db.delete_wars()
     try:
     # await db.add_user(122654789, "Jonibek 2", "@Yorqulov", 123456789)
         user = await db.add_user(message.from_user.id,
@@ -24,54 +26,66 @@ async def show_channels(message: types.Message):
 
     join_channel = []
     aa = 0
-    for channel in CHANNELS:
-        chat = await bot.get_chat(channel[0])
-        invite_link = await chat.export_invite_link()
-        status = await bot.get_chat_member(channel[0], message.from_user.id)
-        
-        if status['status'] == 'left':
-            channel_info = [invite_link, chat.title, 0]
-        else:
-            channel_info = [invite_link, chat.title, 1]
-            aa += 1
-        join_channel.append(channel_info)
+    try: 
+        for channel in CHANNELS:
+            chat = await bot.get_chat(channel[0])
+            invite_link = await chat.export_invite_link()
+            status = await bot.get_chat_member(channel[0], message.from_user.id)
             
-    if aa != len(CHANNELS):   
-        await message.answer(f"""Assalomu alaykum {message.from_user.full_name}""", reply_markup=ReplyKeyboardRemove())
-        await message.answer(f"Quyidagi kanallarga obuna bo'ling: \n",
-                        
-                         reply_markup=check_button(join_channel),
-                         disable_web_page_preview=True)
-    else:
-        await message.answer("Xush kelibsiz!", reply_markup=user_main)
+            if status['status'] == 'left':
+                channel_info = [invite_link, chat.title, 0]
+            else:
+                channel_info = [invite_link, chat.title, 1]
+                aa += 1
+            join_channel.append(channel_info)
+                
+        if aa != len(CHANNELS):   
+            await message.answer(f"""Assalomu alaykum {message.from_user.full_name}""", reply_markup=ReplyKeyboardRemove())
+            await message.answer(f"Quyidagi kanallarga obuna bo'ling: \n",
+                            
+                            reply_markup=check_button(join_channel),
+                            disable_web_page_preview=True)
+        else:
+            await message.answer("Xush kelibsiz!", reply_markup=user_main)
+    except:
+    
+        await db.delete_channels()
+        
+        await bot.send_message(ADMINS[0], "Ushbu bot qaysidir kanaldan chiqarib yuborildi, Botning kanalda adminligiga to'laqonli ishonch hosil qiling. Xavfsizlik uchun barcha ulangan kanallar majburiy a'zolik ro'yxatidan o'chirildi. ")
 
 @dp.callback_query_handler(text="check_subs")
 async def checker(call: types.CallbackQuery):
-    CHANNELS = await db.select_all_channels()
-    
-    await call.message.delete()
-    join_channel = []
-    aa = 0
-    for channel in CHANNELS:
-        chat = await bot.get_chat(channel[0])
-        invite_link = await chat.export_invite_link()
-        status = await bot.get_chat_member(channel[0], call.from_user.id)
+    try:
+        CHANNELS = await db.select_all_channels()
         
-        if status['status'] == 'left':
-            channel_info = [invite_link, chat.title, 0]
-        else:
-            channel_info = [invite_link, chat.title, 1]
-            aa += 1
-        join_channel.append(channel_info)
+        await call.message.delete()
+        join_channel = []
+        aa = 0
+        for channel in CHANNELS:
+            chat = await bot.get_chat(channel[0])
+            invite_link = await chat.export_invite_link()
+            status = await bot.get_chat_member(channel[0], call.from_user.id)
             
-    if aa != len(CHANNELS):   
-        await call.message.answer(f"""{call.from_user.full_name} kanallarga to'liq obuna bo'ling""", reply_markup=ReplyKeyboardRemove())
-        await call.message.answer(f"Quyidagi kanallarga obuna bo'ling: \n",
-                        
-                         reply_markup=check_button(join_channel),
-                         disable_web_page_preview=True)
-    else:
-        await call.message.answer("Xush kelibsiz! Botdan foydalanishingiz mumkin", reply_markup=user_main)
+            if status['status'] == 'left':
+                channel_info = [invite_link, chat.title, 0]
+            else:
+                channel_info = [invite_link, chat.title, 1]
+                aa += 1
+            join_channel.append(channel_info)
+                
+        if aa != len(CHANNELS):   
+            await call.message.answer(f"""{call.from_user.full_name} kanallarga to'liq obuna bo'ling""", reply_markup=ReplyKeyboardRemove())
+            await call.message.answer(f"Quyidagi kanallarga obuna bo'ling: \n",
+                            
+                            reply_markup=check_button(join_channel),
+                            disable_web_page_preview=True)
+        else:
+            await call.message.answer("Xush kelibsiz! Botdan foydalanishingiz mumkin", reply_markup=user_main)
+    except:
+    
+        await db.delete_channels()
+        
+        await bot.send_message(ADMINS[0], "Ushbu bot qaysidir kanaldan chiqarib yuborildi, Botning kanalda adminligiga to'laqonli ishonch hosil qiling. Xavfsizlik uchun barcha ulangan kanallar majburiy a'zolik ro'yxatidan o'chirildi. ")
 
     # await show_channels(call)
     # result = str()

@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -7,7 +7,7 @@ from aiogram.types import ReplyKeyboardRemove, CallbackQuery
 from data.config import ADMINS
 from loader import dp, db, bot
 from keyboards.default.default_btn import admin_main, admin_main_2, back_btn, voice_mute, voice_unmute
-from keyboards.inline.inline_btn import war_check, inline_wars_btn, war_winner
+from keyboards.inline.inline_btn import war_check, inline_wars_btn, war_winner, inline_channel_btn
 
 
         
@@ -38,7 +38,7 @@ async def get_all_reklama(msg:types.Message,state:FSMContext):
     
 @dp.message_handler(text="/start", user_id=ADMINS, state="*")
 async def send_ad_to_all(message: types.Message):
-    await db.create()
+    # await db.create()
     
     try:
     # await db.add_user(122654789, "Jonibek 2", "@Yorqulov", 123456789)
@@ -53,29 +53,32 @@ async def send_ad_to_all(message: types.Message):
     
     
 
-@dp.message_handler(text="🤼‍♂️ UFC Janglar")
+@dp.message_handler(text="📺 UFC Turnirlar")
 async def send_ad_to_all(message: types.Message):
     try:
-        await message.reply("🤼 Mavjud UCF janglar ")
-        # await db.create()
+        await message.reply("👊 Mavjud UCF janglar ")
+        await db.create()
         wars = await db.select_all_wars()
         tr = 1
-        text = "🤼 Janglar\n\n"
-        for war in wars:
-            if war[6]:
-                win = f"🔱 G'olib:  <b>{war[6]}</b>\n⚔️ Xisob:  {war[5]}\n"
-            else:
-                win = ""
-            text += f"{tr}. 🥊 {war[1]} - 🥊 {war[2]} \n"
-            text += win
-            text += f"📅 Sana: \t{war[3]}\n\n"
-            tr += 1
-        
-        # await bot.send_photo(message.from_user.id, war[4], text)
-        await message.answer(text)
-            # print(war)
-        # await message.answer("Assalommu alaykum hurmatli Admin", reply_markup=admin_main)
-        
+        text = "👊 Janglar\n\n"
+        if wars:
+            for war in wars:
+                if war[6]:
+                    win = f"✅ G'olib:  <b>{war[6]}</b>\n📊 Xisob:  {war[5]}\n"
+                else:
+                    win = ""
+                text += f"{tr}. {war[1]} - {war[2]} \n"
+                text += win
+                text += f"📅 Sana: \t{war[3]}\n\n"
+                tr += 1
+            
+            # await bot.send_photo(message.from_user.id, war[4], text)
+            await message.answer(text)
+                # print(war)
+            # await message.answer("Assalommu alaykum hurmatli Admin", reply_markup=admin_main)
+        else:
+            await message.answer("Birorta ham jang yo'q hozircha 1")
+            
     except:
         await message.answer("Birorta ham jang yo'q hozircha")
     
@@ -89,7 +92,7 @@ async def send_ad_to_all(message: types.Message, state=FSMContext):
     await state.set_state("firs_name")
     
     
-@dp.message_handler(state="*", text="🚫 Bekor qilish")
+@dp.message_handler(user_id=ADMINS,state="*", text="🚫 Bekor qilish")
 async def send_ad_to_all(message: types.Message, state=FSMContext):
     await state.finish()
     await message.answer("Amal bekor qilindi.\n\nBosh menu", reply_markup=admin_main)
@@ -143,8 +146,8 @@ async def send_ad_to_all(message: types.Message, state=FSMContext):
     second_name = data.get("second_name")
     war_date = data.get("war_date")
     
-    # text = f"\t 🤼‍♂️  \n\n"
-    text = f"🤼\n🥊 {first_name} - 🥊 {second_name} \n\n"
+    # text = f"\t 👊‍♂️  \n\n"
+    text = f"{first_name} - {second_name} \n\n"
     text += f"📅 Sana: \t{war_date}\n\n"
     text += f"Ma'lumotlar to'grimi?"
     
@@ -194,12 +197,15 @@ async def change_(call: CallbackQuery, state=FSMContext):
 async def delete_war_func(message: types.Message, state=FSMContext):
     await message.answer("Qaysi jangni o'chirib tashlamoqchisiz", reply_markup=ReplyKeyboardRemove())
     # await db.create()
-    wars = await db.select_all_wars()
+    global del_tr 
+    del_tr = 0
+    wars = await db.select_all_wars_admin(del_tr)
+    all = await db.select_all_wars()
     tr = 1
-    text = "🤼 Janglar\n\n"
+    text = f"👊 Janglar: {del_tr+1} - {del_tr+len(wars)} / {len(all)} \n\n"
     for war in wars:
         
-        text += f"{war[0]}. 🥊 {war[1]} - 🥊 {war[2]} \n"
+        text += f"{tr}. {war[1]} - {war[2]} \n"
         text += f"📅 Sana: \t{war[3]}\n\n"
         tr += 1
     await message.answer(text, reply_markup=inline_wars_btn(wars))
@@ -210,6 +216,64 @@ async def change_(call: CallbackQuery, state=FSMContext):
     await call.message.delete()
     await state.finish()
     await call.message.answer("Bosh menu", reply_markup=admin_main)
+        
+    
+    
+@dp.callback_query_handler(state="delete_war", text="forward_wars_group")
+async def change_(call: CallbackQuery, state=FSMContext):
+    global del_tr
+    del_tr += 8
+    try:
+        
+        
+        wars = await db.select_all_wars_admin(del_tr)
+        if wars:
+            tr = 1
+            text = f"👊 Janglar: {del_tr+1} - {del_tr+len(wars)} / {len(await db.select_all_wars())}\n\n"
+            for war in wars:
+                
+                text += f"{tr}. {war[1]} - {war[2]} \n"
+                text += f"📅 Sana: \t{war[3]}\n\n"
+                tr += 1
+            await call.message.delete()
+            await call.message.answer(text, reply_markup=inline_wars_btn(wars))
+            await state.set_state("delete_war")
+        else:
+            a = 'a'+4
+    except Exception as err:
+        del_tr -= 8
+        # await call.answer()
+        # await state.finish()
+        await call.answer(f"Boshqa  janglar qolmadi ") 
+        
+        
+    
+@dp.callback_query_handler(state="delete_war", text="back_wars_group")
+async def change_(call: CallbackQuery, state=FSMContext):
+    global del_tr
+    del_tr -= 8
+    try:
+        
+        
+        wars = await db.select_all_wars_admin(del_tr)
+        if wars:
+            tr = 1
+            text = f"👊 Janglar: {del_tr+1} - {del_tr+len(wars)} / {len(await db.select_all_wars())}\n\n"
+            for war in wars:
+                
+                text += f"{tr}. {war[1]} - {war[2]} \n"
+                text += f"📅 Sana: \t{war[3]}\n\n"
+                tr += 1
+            await call.message.delete()
+            await call.message.answer(text, reply_markup=inline_wars_btn(wars))
+            await state.set_state("delete_war")
+        else:
+            a = 'a'+4
+    except Exception as err:
+        del_tr += 8
+        # await call.answer()
+        # await state.finish()
+        await call.answer(f"Janglarni birinchi bo'limi") 
         
 @dp.callback_query_handler(state="delete_war")
 async def change_(call: CallbackQuery, state=FSMContext):
@@ -224,7 +288,7 @@ async def change_(call: CallbackQuery, state=FSMContext):
     war = await db.select_war(id=int(id))
     
     # print(war[0])
-    text = f"🤼\n🥊 {war[1]} - 🥊 {war[2]} \n\n"
+    text = f" {war[1]} -  {war[2]} \n\n"
     text += f"📅 Sana: \t{war[3]}\n\n"
     text += f"Xaqiqatdan ham jangni ro'yxatdan ochirib tashlamoqchimisiz?"
     
@@ -308,20 +372,24 @@ async def send_ad_to_all(message: types.Message):
     
     
     ####################### jang hisobini o'zgartishi bo'limi boshlanishi $##################################
-@dp.message_handler(text="⚔️ Jang hisobi", user_id=ADMINS)
+@dp.message_handler(text="📝 Jang hisobi", user_id=ADMINS)
 async def golibni_aniqlash_wardan(message: types.Message, state=FSMContext):
     # await message.answer("Assalommu alaykum hurmatli Admin", reply_markup=admin_main)
+    
+    global del_tr
+    del_tr = 0 
     await message.answer("Qaysi jangni hisobini o'zgartirmoqchisiz", reply_markup=ReplyKeyboardRemove())
     # await db.create()
-    wars = await db.select_all_wars()
+    # wars = await db.select_all_wars()
+    wars = await db.select_all_wars_admin(del_tr)
     tr = 1
-    text = "🤼 Janglar\n\n"
+    text = f"👊 Janglar: {del_tr+1} - {del_tr+len(wars)} / {len(await db.select_all_wars())}\n\n"
     for war in wars:
         if war[6]:
-            win = f"🔱 G'olib:  <b>{war[6]}</b>\n⚔️ Xisob:  {war[5]}\n"
+            win = f"✅ G'olib:  <b>{war[6]}</b>\n📝 Xisob:  {war[5]}\n"
         else:
             win = ""
-        text += f"{tr}. 🥊 {war[1]} - 🥊 {war[2]} \n"
+        text += f"{tr}. {war[1]} -  {war[2]} \n"
         text += win
         text += f"📅 Sana: \t{war[3]}\n\n"
         tr += 1
@@ -337,6 +405,75 @@ async def change_(call: CallbackQuery, state=FSMContext):
     await state.finish()
     await call.message.answer("Bosh menu", reply_markup=admin_main)
         
+        
+        
+    
+@dp.callback_query_handler(state="change_war", text="forward_wars_group")
+async def change_(call: CallbackQuery, state=FSMContext):
+    global del_tr
+    del_tr += 8
+    try:
+        
+        
+        wars = await db.select_all_wars_admin(del_tr)
+        if wars:
+            tr = 1
+            text = f"👊 Janglar : {del_tr+1} - {del_tr+len(wars)} / {len(await db.select_all_wars())}\n\n"
+            for war in wars:
+                        
+                if war[6]:
+                    win = f"✅ G'olib:  <b>{war[6]}</b>\n📝 Xisob:  {war[5]}\n"
+                else:
+                    win = ""
+                text += f"{tr}. {war[1]} -  {war[2]} \n"
+                text += win
+                text += f"📅 Sana: \t{war[3]}\n\n"
+                tr += 1
+            await call.message.delete()
+            await call.message.answer(text, reply_markup=inline_wars_btn(wars))
+            await state.set_state("change_war")
+        else:
+            a = 'a'+4
+    except Exception as err:
+        del_tr -= 8
+        # await call.answer()
+        # await state.finish()
+        await call.answer(f"Boshqa  janglar qolmadi ") 
+        
+        
+    
+@dp.callback_query_handler(state="change_war", text="back_wars_group")
+async def change_(call: CallbackQuery, state=FSMContext):
+    global del_tr
+    del_tr -= 8
+    try:
+        
+        
+        wars = await db.select_all_wars_admin(del_tr)
+        if wars:
+            tr = 1
+            text = f"👊 Janglar: {del_tr+1} - {del_tr+len(wars)} / {len(await db.select_all_wars())}\n\n"
+            for war in wars:
+                    
+                if war[6]:
+                    win = f"✅ G'olib:  <b>{war[6]}</b>\n📝 Xisob:  {war[5]}\n"
+                else:
+                    win = ""
+                text += f"{tr}. {war[1]} -  {war[2]} \n"
+                text += win
+                text += f"📅 Sana: \t{war[3]}\n\n"
+                tr += 1
+            await call.message.delete()
+            await call.message.answer(text, reply_markup=inline_wars_btn(wars))
+            await state.set_state("change_war")
+        else:
+            a = 'a'+4
+    except Exception as err:
+        del_tr += 8
+        # await call.answer()
+        # await state.finish()
+        await call.answer(f"Janglarni birinchi bo'limi") 
+    
      
 @dp.callback_query_handler(state="change_war")
 async def golibni_aniqlash_war(call: CallbackQuery, state=FSMContext):
@@ -358,9 +495,9 @@ async def golibni_aniqlash_war(call: CallbackQuery, state=FSMContext):
     await state.update_data(
         {"name2": name2}
     )
-    text = f"\n🥊 {name1}   ⚔️   🥊 {name2} \n\n"
+    text = f"\n {name1}  🤜🤛🏾   {name2} \n\n"
     # text += f"📅 Sana: \t{war[3]}\n\n"
-    text += f" 🔱 Kim g'olib bo'ldi 🔱"
+    text += f"  Kim g'olib bo'ldi "
     
     await bot.send_photo(call.from_user.id, war[4], text, reply_markup=war_winner(name1, name2))
     await state.set_state("change_war_winner")
@@ -410,12 +547,12 @@ async def change_(call: CallbackQuery, state=FSMContext):
     name2 = data.get("name2")
     winner = call.data
     print(winner)
-    await call.message.answer(f"🔱 {winner} 🔱 - g'olib")
+    await call.message.answer(f" {winner} ✅ - g'olib")
     await state.update_data(
         {"winner": winner}
     )
     
-    await call.message.answer(f"Ochkolar hisobini kiriting: \n\n🥊 {name1}   ⚔️   🥊 {name2} \n[xx-xx    :    xx-xx]")
+    await call.message.answer(f"Ochkolar hisobini kiriting: \n\n {name1}   🤜🤛🏾    {name2} \n[xx-xx    :    xx-xx]")
     await state.set_state("change_war_score")
 
         
@@ -466,15 +603,20 @@ async def send_ad_to_all(message: types.Message, state=FSMContext):
 @dp.message_handler(text="📊 Reyting")
 async def send_ad_to_all(message: types.Message):
     raiting = await db.select_raiting()
-    text = f"🔱 G'oliblarni to'g'ri topgan top 20 kishi:\n\n"
+    text = f"🔝 G'oliblarni to'g'ri topgan top 20 kishi:\n\n"
     tr = 1
+    # a = []
     for i in raiting:
-        if i[3]:
-            text += f"{tr}. @{i[3]} - {i[5]} ball\n"
+        user = await db.select_user(id = i[0])
+       
+        if user[3]:
+            text += f"{tr}. @{user[3]} - {i[1]} ball\n"
         else: 
-            text += f"{tr}. <a href='tg://user?id={i[1]}'> {i[2]} </a> - {i[5]} ball\n"
+            text += f"{tr}. <a href='tg://i?id={user[1]}'> {user[2]} </a> - {i[1]} ball\n"
         tr += 1
-    text += "\n 🤖 @ufc270bot"
+    # print(a)
+    # print(set(a))
+    text += "\n 🤖 https://t.me/mixsportuz_bot"
     await message.answer(text)
     
     
@@ -492,14 +634,14 @@ async def send_ad_to_all(message: types.Message):
     
     
     
-@dp.message_handler(text="⛓ Kanallar ro'yxati", user_id=ADMINS)
+@dp.message_handler(text="📣 Kanallar ro'yxati", user_id=ADMINS)
 async def send_ad_to_all(message: types.Message):
     await message.answer("Majburiy a'zolik kanallari")
     channels = await db.select_all_channels()
-    text = "⛓ Kanallar ro'yxati:\n\n"
+    text = "📣 Kanallar ro'yxati:\n\n"
     tr = 1
     for chanel in channels:
-        text += f"⛓ {tr} - {chanel[1]}\n⛓ Link: {chanel[2]}\n\n"
+        text += f"📣 {tr} - {chanel[1]}\n📣 Link: {chanel[2]}\n\n"
         tr += 1
     await message.answer(text)
         
@@ -548,21 +690,24 @@ async def send_ad_to_all(message: types.Message, state = FSMContext):
     
 @dp.message_handler(text="➖ Kanal o'chirish", user_id=ADMINS)
 async def send_ad_to_all(message: types.Message, state = FSMContext):
-    await message.answer("Majburiy a'zolik kanallari", reply_markup=ReplyKeyboardRemove())
-    channels = await db.select_all_channels()
-    text = "Qaysi kanallarni majburiy a'zolikdan olib tashlamoqchisiz:\n\n"
-    text += "⛓ Kanallar ro'yxati:\n\n"
-    tr = 1
-    # print(channels)
-    for chanel in channels:
-        text += f"⛓ {tr} - {chanel[1]}\n⛓ Link: {chanel[2]}\n\n"
-        tr += 1
-    await message.answer(text, reply_markup=inline_wars_btn(channels))
+    try:
+        await message.answer("Majburiy a'zolik kanallari", reply_markup=ReplyKeyboardRemove())
+        channels = await db.select_all_channels()
+        text = "Qaysi kanallarni majburiy a'zolikdan olib tashlamoqchisiz:\n\n"
+        text += "📣 Kanallar ro'yxati:\n\n"
+        tr = 1
+        # print(channels)
+        for chanel in channels:
+            text += f"📣 {tr} - {chanel[1]}\n📣 Link: {chanel[2]}\n\n"
+            tr += 1
+        await message.answer(text, reply_markup=inline_channel_btn(channels))
+            
         
-     
-        
-    await state.set_state("delete_channels")
     
+        await state.set_state("delete_channels")
+    except:
+        await message.answer("Majburiy a'zolik kanallari xatolik sodir boldi", reply_markup=admin_main_2)
+        
     
      
 @dp.callback_query_handler(text="back_wars",state="delete_channels")
@@ -603,42 +748,8 @@ async def golibni_aniqlash_war(call: CallbackQuery, state=FSMContext):
         ################################################################################################################################
         ################################################################################################################################
     
-@dp.message_handler(text="/azo")
-async def send_ad_to_all(message: types.Message, state = FSMContext):
-    check_member = await bot.get_chat_member(-1001362625884, message.from_user.id) 
-    if check_member.status not in ["member", "creator"]: 
-        await message.reply("<b>some text</b>")
-    else:
-        await message.reply("xammasi yaxshi")
-    
     
 
-from data.config import CHANNELS
-@dp.message_handler(text="/ss")
-async def check(message: types.Message):
-    # booot = await bot.get_chat_member(CHANNELS[1], message.from_user.id)
-    # print(booot)
-    # # member = await bot.get_chat_member(user_id=message.from_user.id, chat_id=-1001362625884)
-    # # await message.answer(member.is_chat_member())
-    
-    check_member = await bot.get_chat("@iceberg_pubgm") 
-    print(check_member.id)
-    
-    check = await bot.get_chat_members_count("@new_bot_test_group")
-    print(check)
-    chat = await bot.get_chat("https://t.me/+eWAjGPF_GAU4NmIy")
-    print(chat)
-    
-    # is_member = await bot.get_chat_member("https://t.me/+eWAjGPF_GAU4NmIy", 2079362883)
-    # print(is_member)
-    # if check_member.status not in ["member", "creator"]: 
-    #     await message.reply("<b>some text</b>")
-        ################################################################################################################################
-        ################################################################################################################################
-        ################################################################################################################################
-        ################################################################################################################################
-        ################################################################################################################################
-    
     
     
     

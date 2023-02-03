@@ -25,9 +25,9 @@ async def test():
     
     
     
-    await db.add_war("jangchi 1", "jangchi 2", "17-01-2022", "https://t.me/mamatmusayevjaloliddin/303")
-    await db.add_war("jangchi 3", "jangchi 4", "18-01-2022", "https://t.me/mamatmusayevjaloliddin/299")
-    await db.add_war("jangchi 5", "jangchi 6", "19-01-2022", "https://t.me/mamatmusayevjaloliddin/303")
+    await db.add_war("jangchi 1", "jangchi 2", "17-01-2022", "AgACAgIAAxkBAAIMq2PdDBYO94ZEdsHHHL7lFEy5Vx86AALBwzEbsEnpSrmSdcMPGPPcAQADAgADeAADLgQ")
+    await db.add_war("jangchi 3", "jangchi 4", "18-01-2022", "AgACAgIAAxkBAAIMq2PdDBYO94ZEdsHHHL7lFEy5Vx86AALBwzEbsEnpSrmSdcMPGPPcAQADAgADeAADLgQ")
+    await db.add_war("jangchi 5", "jangchi 6", "19-01-2022", "AgACAgIAAxkBAAIMq2PdDBYO94ZEdsHHHL7lFEy5Vx86AALBwzEbsEnpSrmSdcMPGPPcAQADAgADeAADLgQ")
     
     
     
